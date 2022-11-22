@@ -66,7 +66,7 @@ getCompanyPublicityByAADE("vatid","user", "pass", "vatidcalledby", true).then((d
 
 
 ## Response Examples
-```json
+```javascript
 // Success
 [
   call_seq_id: '120746974',
