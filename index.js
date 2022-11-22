@@ -11,7 +11,7 @@ const xml2js = require('xml2js');
  */
 
 
-function parseXml(xml) {
+function parseXml(xml, debug = false) {
     return new Promise((resolve, reject) => {
         xml2js.parseString(xml, (err, result) => {
             if (err) {
@@ -63,6 +63,11 @@ function parseXml(xml) {
                     final_arr_return['errors_info']['descr'] = error_descr;
                     final_arr_return['data'] = null;
                 }
+
+                if(debug){
+                    console.log("[*][aade-publicity-search] Parsing AADE Response");
+                }
+
                 resolve(final_arr_return);
             }
         });
@@ -79,6 +84,9 @@ async function getCompanyPublicityByAADE(search_vatid, aade_publicity_username, 
         let data_xml = "";
         let final_arr_return = [];
             
+        if(debug){
+            console.log("[*][aade-publicity-search] Starting...");
+        }
 
         if(search_vatid == null || search_vatid == ""){
             return (Error ('You need to pass a VATID for publicity search'))
@@ -108,12 +116,26 @@ async function getCompanyPublicityByAADE(search_vatid, aade_publicity_username, 
             return (Error ('Parameter debug must be boolean'))
         }
 
+        if(debug){
+            console.log("[*][aade-publicity-search] Validation check for all params ...");
+        }
+
         if(searched_by_vatid == null || searched_by_vatid == ""){
+            if(debug){
+                console.log("[*][aade-publicity-search] Structure XML Data without vatid called_by");
+            }
             data_xml = '<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:ns2="http://rgwspublic2/RgWsPublic2Service" xmlns:ns3="http://rgwspublic2/RgWsPublic2">\r\n   <env:Header>\r\n      <ns1:Security>\r\n         <ns1:UsernameToken>\r\n            <ns1:Username>'+ aade_publicity_username +'</ns1:Username>\r\n            <ns1:Password>'+ aade_publicity_password +'</ns1:Password>\r\n         </ns1:UsernameToken>\r\n      </ns1:Security>\r\n   </env:Header>\r\n   <env:Body>\r\n      <ns2:rgWsPublic2AfmMethod>\r\n         <ns2:INPUT_REC>\r\n            <ns3:afm_called_by/>\r\n            <ns3:afm_called_for>'+ search_vatid +'</ns3:afm_called_for>\r\n         </ns2:INPUT_REC>\r\n      </ns2:rgWsPublic2AfmMethod>\r\n   </env:Body>\r\n</env:Envelope>';
         }else{
+            if(debug){
+                console.log("[*][aade-publicity-search] Structure XML Data with vatid called_by");
+            }
             data_xml = '<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:ns2="http://rgwspublic2/RgWsPublic2Service" xmlns:ns3="http://rgwspublic2/RgWsPublic2">\r\n   <env:Header>\r\n      <ns1:Security>\r\n         <ns1:UsernameToken>\r\n            <ns1:Username>'+ aade_publicity_username +'</ns1:Username>\r\n            <ns1:Password>'+ aade_publicity_password +'</ns1:Password>\r\n         </ns1:UsernameToken>\r\n      </ns1:Security>\r\n   </env:Header>\r\n   <env:Body>\r\n      <ns2:rgWsPublic2AfmMethod>\r\n         <ns2:INPUT_REC>\r\n            <ns3:afm_called_by>'+ searched_by_vatid +'<ns3:afm_called_by/>\r\n            <ns3:afm_called_for>'+ search_vatid +'</ns3:afm_called_for>\r\n         </ns2:INPUT_REC>\r\n      </ns2:rgWsPublic2AfmMethod>\r\n   </env:Body>\r\n</env:Envelope>';
         }
 
+
+        if(debug){
+            console.log("[*][aade-publicity-search] Preparing AADE Request");
+        }
 
         let config = {
             method: 'post',
@@ -125,7 +147,10 @@ async function getCompanyPublicityByAADE(search_vatid, aade_publicity_username, 
         };
        
         const {data, error} = await axios.request(config);
-        const final_result = await parseXml(data);
+        const final_result = await parseXml(data, debug);
+        if(debug){
+            console.log("[*][aade-publicity-search] Done!");
+        }
         return final_result;       
     }catch (error){
         return (Error ('Something went wrong: ' + error + ' (if you believe is this a bug, open a issue)'))
