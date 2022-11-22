@@ -34,8 +34,10 @@ function parseXml(xml, debug = false) {
                 }
         
                 let company_data = null;
+                let company_sectors = null
                 if(error_code == null && error_descr == null){
                     company_data = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['basic_rec'][0];
+                    company_sectors = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['firm_act_tab'][0]['item'];
                     Object.entries(Object.keys(company_data)).forEach(entry => {
                         const [key, value] = entry;
                         if(typeof company_data[value][0] === "object"){
@@ -44,6 +46,7 @@ function parseXml(xml, debug = false) {
                             company_data[value] = company_data[value][0];
                         }
                     });
+                    company_data.company_sectors = company_sectors;
                 }
         
                 
