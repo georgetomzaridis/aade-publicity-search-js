@@ -1,6 +1,6 @@
 {
   "name": "aade-publicity-search",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Request publicity records (street, city, name, type, status etc.) from AADE (Independent Public Revenue Authority) about a company using their VAT number (AFM)",
   "main": "index.js",
   "scripts": {
@@ -23,8 +23,8 @@
     "xml2js": "^0.4.23"
   },
   "bugs": {
-    "url" : "https://github.com/georgetomzaridis/aade-publicity-search-js/issues",
-    "email" : "georgetomzaridis@gmail.com"
+    "url": "https://github.com/georgetomzaridis/aade-publicity-search-js/issues",
+    "email": "georgetomzaridis@gmail.com"
   },
   "repository": {
     "type": "git",
