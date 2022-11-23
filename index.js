@@ -10,6 +10,17 @@ const xml2js = require('xml2js');
  * @param {boolean} debug - Logging steps until finish, if you enable this (Optional)
  */
 
+function convertArrayValues(object){
+    Object.entries(Object.keys(object)).forEach(entry => {
+        const [key, value] = entry;
+        if(typeof object[value][0] === "object"){
+            object[value] = null;
+        }else{
+            object[value] = object[value][0];
+            object[value] = object[value].trim();
+        }
+    });
+}
 
 function parseXml(xml, debug = false) {
     return new Promise((resolve, reject) => {
@@ -34,21 +45,22 @@ function parseXml(xml, debug = false) {
                 }
         
                 let company_data = null;
+                let company_sectors = null
                 if(error_code == null && error_descr == null){
-                    company_data = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['basic_rec'][0];
-                    Object.entries(Object.keys(company_data)).forEach(entry => {
-                        const [key, value] = entry;
-                        if(typeof company_data[value][0] === "object"){
-                            company_data[value] = null;
-                        }else{
-                            company_data[value] = company_data[value][0];
-                        }
-                    });
-                }
+                     company_data = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['basic_rec'][0];
+                     convertArrayValues(company_data)
+                                   
+                      if(final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['firm_act_tab'] !== undefined){
+                            company_sectors = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['firm_act_tab'][0]['item'];
+                             company_sectors.forEach(e => {
+                                 convertArrayValues(e)
+                             });
+                       }
+                                   
+                 company_data.company_sectors = company_sectors;
+               }
         
                 
-                
-        
                 final_arr_return['call_seq_id'] = call_seq_id;
                 if((error_code == null && error_descr == null) && company_data != null){
                     final_arr_return['have_errors'] = false;
@@ -147,6 +159,7 @@ async function getCompanyPublicityByAADE(search_vatid, aade_publicity_username, 
         };
        
         const {data, error} = await axios.request(config);
+        console.log(data);
         const final_result = await parseXml(data, debug);
         if(debug){
             console.log("[*][aade-publicity-search] Done!");
