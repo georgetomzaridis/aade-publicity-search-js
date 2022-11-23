@@ -17,6 +17,7 @@ function convertArrayValues(object){
             object[value] = null;
         }else{
             object[value] = object[value][0];
+            object[value] = object[value].trim();
         }
     });
 }
@@ -46,14 +47,18 @@ function parseXml(xml, debug = false) {
                 let company_data = null;
                 let company_sectors = null
                 if(error_code == null && error_descr == null){
-                    company_data = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['basic_rec'][0];
-                    company_sectors = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['firm_act_tab'][0]['item'];
-                    convertArrayValues(company_data)
-                    company_sectors.forEach(e => {
-                        convertArrayValues(e)
-                    });
-                    company_data.company_sectors = company_sectors;
-                }
+                     company_data = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['basic_rec'][0];
+                     convertArrayValues(company_data)
+                                   
+                      if(final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['firm_act_tab'] !== undefined){
+                            company_sectors = final_json['env:Envelope']['env:Body'][0]['srvc:rgWsPublic2AfmMethodResponse'][0]['srvc:result'][0]['rg_ws_public2_result_rtType'][0]['firm_act_tab'][0]['item'];
+                             company_sectors.forEach(e => {
+                                 convertArrayValues(e)
+                             });
+                       }
+                                   
+                 company_data.company_sectors = company_sectors;
+               }
         
                 
                 final_arr_return['call_seq_id'] = call_seq_id;
