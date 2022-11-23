@@ -1,5 +1,9 @@
 const axios = require('axios');
 const xml2js = require('xml2js');
+const isXML = require('is-xml');
+const zlib = require("zlib");
+const util = require('util');
+const gunzip = util.promisify(zlib.gunzip);
 
 /**
  * Request publicity records from AADE for a specific company VATID [https://www.aade.gr/epiheiriseis/forologikes-ypiresies/mitroo/anazitisi-basikon-stoiheion-mitrooy-epiheiriseon]
@@ -95,6 +99,7 @@ async function getCompanyPublicityByAADE(search_vatid, aade_publicity_username, 
     try {
         let data_xml = "";
         let final_arr_return = [];
+        let final_result = [];
             
         if(debug){
             console.log("[*][aade-publicity-search] Starting...");
@@ -136,12 +141,13 @@ async function getCompanyPublicityByAADE(search_vatid, aade_publicity_username, 
             if(debug){
                 console.log("[*][aade-publicity-search] Structure XML Data without vatid called_by");
             }
-            data_xml = '<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:ns2="http://rgwspublic2/RgWsPublic2Service" xmlns:ns3="http://rgwspublic2/RgWsPublic2">\r\n   <env:Header>\r\n      <ns1:Security>\r\n         <ns1:UsernameToken>\r\n            <ns1:Username>'+ aade_publicity_username +'</ns1:Username>\r\n            <ns1:Password>'+ aade_publicity_password +'</ns1:Password>\r\n         </ns1:UsernameToken>\r\n      </ns1:Security>\r\n   </env:Header>\r\n   <env:Body>\r\n      <ns2:rgWsPublic2AfmMethod>\r\n         <ns2:INPUT_REC>\r\n            <ns3:afm_called_by/>\r\n            <ns3:afm_called_for>'+ search_vatid +'</ns3:afm_called_for>\r\n         </ns2:INPUT_REC>\r\n      </ns2:rgWsPublic2AfmMethod>\r\n   </env:Body>\r\n</env:Envelope>';
+            data_xml = '<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:ns2="http://rgwspublic2/RgWsPublic2Service" xmlns:ns3="http://rgwspublic2/RgWsPublic2"><env:Header><ns1:Security><ns1:UsernameToken><ns1:Username>'+ aade_publicity_username +'</ns1:Username><ns1:Password>'+ aade_publicity_password +'</ns1:Password></ns1:UsernameToken></ns1:Security></env:Header><env:Body><ns2:rgWsPublic2AfmMethod><ns2:INPUT_REC><ns3:afm_called_by/><ns3:afm_called_for>'+ search_vatid +'</ns3:afm_called_for></ns2:INPUT_REC></ns2:rgWsPublic2AfmMethod></env:Body></env:Envelope>';
+        
         }else{
             if(debug){
                 console.log("[*][aade-publicity-search] Structure XML Data with vatid called_by");
             }
-            data_xml = '<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:ns2="http://rgwspublic2/RgWsPublic2Service" xmlns:ns3="http://rgwspublic2/RgWsPublic2">\r\n   <env:Header>\r\n      <ns1:Security>\r\n         <ns1:UsernameToken>\r\n            <ns1:Username>'+ aade_publicity_username +'</ns1:Username>\r\n            <ns1:Password>'+ aade_publicity_password +'</ns1:Password>\r\n         </ns1:UsernameToken>\r\n      </ns1:Security>\r\n   </env:Header>\r\n   <env:Body>\r\n      <ns2:rgWsPublic2AfmMethod>\r\n         <ns2:INPUT_REC>\r\n            <ns3:afm_called_by>'+ searched_by_vatid +'<ns3:afm_called_by/>\r\n            <ns3:afm_called_for>'+ search_vatid +'</ns3:afm_called_for>\r\n         </ns2:INPUT_REC>\r\n      </ns2:rgWsPublic2AfmMethod>\r\n   </env:Body>\r\n</env:Envelope>';
+            data_xml = '<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope" xmlns:ns1="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:ns2="http://rgwspublic2/RgWsPublic2Service" xmlns:ns3="http://rgwspublic2/RgWsPublic2"><env:Header><ns1:Security><ns1:UsernameToken><ns1:Username>'+ aade_publicity_username +'</ns1:Username><ns1:Password>'+ aade_publicity_password +'</ns1:Password></ns1:UsernameToken></ns1:Security></env:Header><env:Body><ns2:rgWsPublic2AfmMethod><ns2:INPUT_REC><ns3:afm_called_by>'+ searched_by_vatid +'<ns3:afm_called_by/><ns3:afm_called_for>'+ search_vatid +'</ns3:afm_called_for></ns2:INPUT_REC></ns2:rgWsPublic2AfmMethod></env:Body></env:Envelope>';
         }
 
 
@@ -153,23 +159,29 @@ async function getCompanyPublicityByAADE(search_vatid, aade_publicity_username, 
             method: 'post',
             url: 'https://www1.gsis.gr/wsaade/RgWsPublic2/RgWsPublic2',
             headers: { 
-              'Content-Type': 'application/soap+xml'
+                'Content-Type': 'application/soap+xml; charset=utf8',
+                'User-Agent': '@georgetomzaridis/aade-publicity-search',
+                'Accept-Encoding': 'gzip',
+                'Connection': 'keep-alive',
+                'Accept': '*/*',
             },
-            data : data_xml
+            data : data_xml,
+            responseType: "arraybuffer",
+            decompress: true,
+
         };
-       
+
+   
         const {data, error} = await axios.request(config);
-        console.log(data);
-        const final_result = await parseXml(data, debug);
-        if(debug){
-            console.log("[*][aade-publicity-search] Done!");
-        }
-        return final_result;       
+        const decompress_data = await gunzip(data);
+        const final_dec_data = decompress_data.toString('utf8');
+        final_result = parseXml(final_dec_data, debug);
+        return final_result;
+             
     }catch (error){
         return (Error ('Something went wrong: ' + error + ' (if you believe is this a bug, open a issue)'))
     } 
     
 }
-
 
 module.exports = getCompanyPublicityByAADE;
