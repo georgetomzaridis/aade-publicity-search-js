@@ -14,7 +14,8 @@ Install aade-publicity-search with npm
 ```bash
   npm install aade-publicity-search
 ```
-    
+
+[Find the package on NPM Registry](https://www.npmjs.com/package/aade-publicity-search)
 ## Usage/Examples
 
 ```javascript
@@ -60,8 +61,8 @@ getCompanyPublicityByAADE("vatid","user", "pass", "vatidcalledby", true).then((d
 | ------------- | ------------- | ------------- | 
 | call_seq_id  | string  | AADE Call/Request ID  |  
 | have_errors  | boolean  | This indicates if your request have any errors  | 
-| have_errors.code  | string  | AADE Code error (can be null if no errors)  | 
-| have_errors.descr  | string  | AADE Description error (can be null if no errors)  | 
+| errors_info.code  | string  | AADE Code error (can be null if no errors)  | 
+| errors_info.descr  | string  | AADE Description error (can be null if no errors)  | 
 | data  | object  | Results (can be null if we have errors)  | 
 
 
