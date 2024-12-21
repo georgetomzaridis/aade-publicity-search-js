@@ -52,7 +52,7 @@ getCompanyPublicityByAADE("vatid","user", "pass", "vatidcalledby", true).then((d
 | search_vatid  | string  | Yes  | Company VATID that you want to request publicity records  | 
 | aade_publicity_username  | string  | Yes  | AADE Publicity username that used for API call  |
 | aade_publicity_password  | string  | Yes  | AADE Publicity password that used for API call  |
-| searched_by_vatid  | string  | No  | Publicity records requested by VATID  |
+| searched_by_vatid  | string  | No  | Publicity records requested by VATID |
 | debug  | boolean  | No  | Logging steps until finish, if you enable this  |
 
 ## Data Return
@@ -63,6 +63,8 @@ getCompanyPublicityByAADE("vatid","user", "pass", "vatidcalledby", true).then((d
 | have_errors  | boolean  | This indicates if your request have any errors  | 
 | errors_info.code  | string  | AADE Code error (can be null if no errors)  | 
 | errors_info.descr  | string  | AADE Description error (can be null if no errors)  | 
+| search_info.afm_searching | string | Company VATID that you are searching for publicity records |
+| search_info.afm_called_by | string, null | Publicity records requested by VATID (can be null if not provided in search, cause is optinal) |
 | data  | object  | Results (can be null if we have errors)  | 
 
 
@@ -73,6 +75,7 @@ getCompanyPublicityByAADE("vatid","user", "pass", "vatidcalledby", true).then((d
   call_seq_id: '120746974',
   have_errors: false,
   errors_info: [ code: null, descr: null ],
+  search_info: [ afm_searching: '123456789', afm_called_by: null ],
   data: {
     afm: '123456789   ',
     doy: '1234',
@@ -103,6 +106,7 @@ getCompanyPublicityByAADE("vatid","user", "pass", "vatidcalledby", true).then((d
     code: 'RG_WS_PUBLIC_TOKEN_USERNAME_NOT_AUTHENTICATED',
     descr: 'Ο συνδυασμός χρήστη/κωδικού πρόσβασης που δόθηκε δεν είναι έγκυρος.'
   ],
+  search_info: [ afm_searching: '123456789', afm_called_by: null ],
   data: null
 ]
 ```
