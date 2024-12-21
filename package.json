@@ -30,6 +30,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/georgetomzaridis/aade-publicity-search-js.git"
+    "url": "git+https://github.com/georgetomzaridis/aade-publicity-search-js.git"
   }
 }
